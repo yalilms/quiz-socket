@@ -1,0 +1,6 @@
+org/hlanz/quiz/modelo/Pregunta.class
+org/hlanz/quiz/cliente/ClienteQuiz.class
+org/hlanz/quiz/servidor/ServidorQuiz.class
+org/hlanz/quiz/servidor/ManejadorClienteQuiz.class
+org/hlanz/quiz/cliente/ClienteQuiz$ListenerServidor.class
+org/hlanz/quiz/protocolo/HttpUtil.class
