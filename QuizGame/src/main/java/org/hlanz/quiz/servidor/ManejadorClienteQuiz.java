@@ -5,6 +5,7 @@ import org.hlanz.quiz.protocolo.HttpUtil;
 import java.io.*;
 import java.net.Socket;
 import java.util.Map;
+import java.util.function.Consumer;
 
 public class ManejadorClienteQuiz implements Runnable {
     private Socket socket;
@@ -18,8 +19,21 @@ public class ManejadorClienteQuiz implements Runnable {
     private char respuesta;
     private long tiempoRespuesta; // ms que tardo en responder
 
+    // Callbacks para registrar/remover jugador (funciona con ServidorQuiz y ServidorQuizSSL)
+    private Consumer<ManejadorClienteQuiz> onRegistrar;
+    private Consumer<ManejadorClienteQuiz> onRemover;
+
     public ManejadorClienteQuiz(Socket socket) {
         this.socket = socket;
+        // Por defecto usa ServidorQuiz
+        this.onRegistrar = ServidorQuiz::registrarJugador;
+        this.onRemover = ServidorQuiz::removerJugador;
+    }
+
+    public ManejadorClienteQuiz(Socket socket, Consumer<ManejadorClienteQuiz> onRegistrar, Consumer<ManejadorClienteQuiz> onRemover) {
+        this.socket = socket;
+        this.onRegistrar = onRegistrar;
+        this.onRemover = onRemover;
     }
 
     @Override
@@ -46,7 +60,7 @@ public class ManejadorClienteQuiz implements Runnable {
             enviarHttp("WAIT", "Esperando a que empiece la partida...");
 
             // Registrar en el servidor
-            ServidorQuiz.registrarJugador(this);
+            onRegistrar.accept(this);
 
             // Bucle de lectura: recibe peticiones HTTP del cliente
             Map<String, String> mensaje;
@@ -94,7 +108,7 @@ public class ManejadorClienteQuiz implements Runnable {
 
     private void desconectar() {
         try {
-            ServidorQuiz.removerJugador(this);
+            onRemover.accept(this);
             if (nombreUsuario != null) {
                 System.out.println("[-] " + nombreUsuario + " se ha desconectado");
             }
