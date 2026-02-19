@@ -1,7 +1,7 @@
-/home/yalilms/Documentos/Superior/psp/quiz-socket/QuizGame/src/main/java/org/hlanz/quiz/protocolo/HttpUtil.java
-/home/yalilms/Documentos/Superior/psp/quiz-socket/QuizGame/src/main/java/org/hlanz/quiz/cliente/ClienteQuiz.java
-/home/yalilms/Documentos/Superior/psp/quiz-socket/QuizGame/src/main/java/org/hlanz/quiz/servidor/ServidorQuiz.java
-/home/yalilms/Documentos/Superior/psp/quiz-socket/QuizGame/src/main/java/org/hlanz/quiz/servidor/ManejadorClienteQuiz.java
-/home/yalilms/Documentos/Superior/psp/quiz-socket/QuizGame/src/main/java/org/hlanz/quiz/ssl/ServidorQuizSSL.java
-/home/yalilms/Documentos/Superior/psp/quiz-socket/QuizGame/src/main/java/org/hlanz/quiz/ssl/ClienteQuizSSL.java
-/home/yalilms/Documentos/Superior/psp/quiz-socket/QuizGame/src/main/java/org/hlanz/quiz/modelo/Pregunta.java
+/home/yalilms/Documentos/2ºDAM/Proceso_Servicios/quiz-socket/QuizGame/src/main/java/org/hlanz/quiz/cliente/ClienteQuiz.java
+/home/yalilms/Documentos/2ºDAM/Proceso_Servicios/quiz-socket/QuizGame/src/main/java/org/hlanz/quiz/modelo/Pregunta.java
+/home/yalilms/Documentos/2ºDAM/Proceso_Servicios/quiz-socket/QuizGame/src/main/java/org/hlanz/quiz/protocolo/HttpUtil.java
+/home/yalilms/Documentos/2ºDAM/Proceso_Servicios/quiz-socket/QuizGame/src/main/java/org/hlanz/quiz/servidor/ManejadorClienteQuiz.java
+/home/yalilms/Documentos/2ºDAM/Proceso_Servicios/quiz-socket/QuizGame/src/main/java/org/hlanz/quiz/servidor/ServidorQuiz.java
+/home/yalilms/Documentos/2ºDAM/Proceso_Servicios/quiz-socket/QuizGame/src/main/java/org/hlanz/quiz/ssl/ClienteQuizSSL.java
+/home/yalilms/Documentos/2ºDAM/Proceso_Servicios/quiz-socket/QuizGame/src/main/java/org/hlanz/quiz/ssl/ServidorQuizSSL.java

@@ -12,9 +12,11 @@ WORKDIR /app
 COPY --from=build /app/target/QuizGame-1.0-SNAPSHOT.jar app.jar
 COPY --from=build /app/src/main/resources/blocket.csv /app/blocket.csv
 COPY --from=build /app/src/main/resources/Certificados /app/Certificados
+COPY start.sh /app/start.sh
+RUN chmod +x /app/start.sh
 
 # Puerto TCP (quiz normal) y SSL
 EXPOSE 8080 8443
 
-# Ejecutar servidor quiz
-CMD ["java", "-jar", "app.jar"]
+# Arrancar ambos servidores
+CMD ["/bin/bash", "/app/start.sh"]

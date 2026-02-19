@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.Scanner;
 
 public class ClienteQuiz {
-    private static final String HOST = "localhost";
+    private static String HOST = "localhost";
     private static final int PUERTO = 8080;
 
     private Socket socket;
@@ -172,6 +172,7 @@ public class ClienteQuiz {
     }
 
     public static void main(String[] args) {
+        if (args.length > 0) HOST = args[0];
         ClienteQuiz cliente = new ClienteQuiz();
         cliente.iniciar();
     }

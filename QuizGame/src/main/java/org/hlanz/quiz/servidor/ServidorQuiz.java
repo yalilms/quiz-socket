@@ -14,6 +14,7 @@ public class ServidorQuiz {
 
     private static Set<ManejadorClienteQuiz> jugadores = ConcurrentHashMap.newKeySet();
     private static List<Pregunta> preguntas;
+    private static volatile long tiempoPrimerJugador = 0;
 
     public static void main(String[] args) {
         ExecutorService pool = Executors.newFixedThreadPool(MAX_CLIENTES);
@@ -29,7 +30,7 @@ public class ServidorQuiz {
         System.out.println("Puerto: " + PUERTO);
         System.out.println("Preguntas cargadas: " + preguntas.size());
         System.out.println("Esperando jugadores...");
-        System.out.println("Escribe START cuando todos esten conectados.\n");
+        System.out.println("[i] El juego arrancara con 2 jugadores o tras 90s desde el primero.\n");
 
         // Hilo para aceptar conexiones
         Thread hiloConexiones = new Thread(() -> {
@@ -46,25 +47,26 @@ public class ServidorQuiz {
         hiloConexiones.setDaemon(true);
         hiloConexiones.start();
 
-        // Hilo principal: espera START del admin
-        Scanner scanner = new Scanner(System.in);
+        // Espera automática: arranca con 2+ jugadores o tras 90s desde el primer jugador
+        final long TIMEOUT_MS = 90_000L;
+        final int MIN_JUGADORES = 2;
         while (true) {
-            String input = scanner.nextLine().trim();
-            if (input.equalsIgnoreCase("START") && !jugadores.isEmpty()) {
+            int n = jugadores.size();
+            if (n >= MIN_JUGADORES) {
+                System.out.println("[i] " + n + " jugadores conectados. Iniciando juego...");
                 break;
             }
-            if (jugadores.isEmpty()) {
-                System.out.println("[!] No hay jugadores conectados todavia.");
-            } else {
-                System.out.println("[i] Jugadores conectados: " + jugadores.size() + ". Escribe START para empezar.");
+            if (tiempoPrimerJugador > 0 && (System.currentTimeMillis() - tiempoPrimerJugador) >= TIMEOUT_MS) {
+                System.out.println("[i] Timeout de 90s alcanzado con " + n + " jugador(es). Iniciando juego...");
+                break;
             }
+            try { Thread.sleep(500); } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
         }
 
         // Empezar el juego
         System.out.println("\n=== EMPIEZA EL QUIZ ===\n");
         iniciarJuego();
         pool.shutdown();
-        scanner.close();
     }
 
     private static void iniciarJuego() {
@@ -191,12 +193,12 @@ public class ServidorQuiz {
     }
 
     private static List<Pregunta> cargarDesdeFTP() {
-        String ftpHost = "217.154.102.183";
+        String ftpHost = "172.17.0.1";
         String ftpFile = "/blocket.csv"; // ruta del archivo en el FTP
         System.out.println("[i] Intentando descargar preguntas desde FTP " + ftpHost + "...");
         try {
             // Conectar al FTP usando java.net.URL (ftp://user:pass@host/fichero)
-            java.net.URL url = new java.net.URL("ftp://anonymous:@" + ftpHost + ftpFile);
+            java.net.URL url = new java.net.URL("ftp://ftpquiz:Quiz2026!@" + ftpHost + ftpFile);
             java.net.URLConnection conexion = url.openConnection();
             conexion.setConnectTimeout(5000);
             conexion.setReadTimeout(5000);
@@ -221,6 +223,10 @@ public class ServidorQuiz {
 
     public static void registrarJugador(ManejadorClienteQuiz jugador) {
         jugadores.add(jugador);
+        if (tiempoPrimerJugador == 0) {
+            tiempoPrimerJugador = System.currentTimeMillis();
+            System.out.println("[i] Primer jugador conectado. El juego arrancara en max 90s.");
+        }
         System.out.println("[i] Jugadores conectados: " + jugadores.size());
     }
 

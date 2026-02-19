@@ -21,6 +21,7 @@ public class ServidorQuizSSL {
 
     private static Set<ManejadorClienteQuiz> jugadores = ConcurrentHashMap.newKeySet();
     private static List<Pregunta> preguntas;
+    private static volatile long tiempoPrimerJugador = 0;
 
     public static void main(String[] args) {
         ExecutorService pool = Executors.newFixedThreadPool(MAX_CLIENTES);
@@ -37,16 +38,13 @@ public class ServidorQuizSSL {
         System.out.println("Puerto: " + PUERTO);
         System.out.println("Preguntas cargadas: " + preguntas.size());
         System.out.println("Esperando jugadores...");
-        System.out.println("Escribe START cuando todos esten conectados.\n");
+        System.out.println("[i] El juego arrancara con 2 jugadores o tras 90s desde el primero.\n");
 
         // Hilo para aceptar conexiones SSL
         Thread hiloConexiones = new Thread(() -> {
             try {
-                // Configurar keystore SSL
-                String keystorePath = ServidorQuizSSL.class
-                        .getClassLoader()
-                        .getResource("Certificados/server.keystore")
-                        .getPath();
+                // Configurar keystore SSL (ruta absoluta para compatibilidad con Docker)
+                String keystorePath = "/app/Certificados/server.keystore";
                 System.setProperty("javax.net.ssl.keyStore", keystorePath);
                 System.setProperty("javax.net.ssl.keyStorePassword", "password123");
 
@@ -77,24 +75,25 @@ public class ServidorQuizSSL {
         hiloConexiones.setDaemon(true);
         hiloConexiones.start();
 
-        // Esperar START del admin
-        Scanner scanner = new Scanner(System.in);
+        // Espera automática: arranca con 2+ jugadores o tras 90s desde el primer jugador
+        final long TIMEOUT_MS = 90_000L;
+        final int MIN_JUGADORES = 2;
         while (true) {
-            String input = scanner.nextLine().trim();
-            if (input.equalsIgnoreCase("START") && !jugadores.isEmpty()) {
+            int n = jugadores.size();
+            if (n >= MIN_JUGADORES) {
+                System.out.println("[i] " + n + " jugadores conectados. Iniciando juego...");
                 break;
             }
-            if (jugadores.isEmpty()) {
-                System.out.println("[!] No hay jugadores conectados todavia.");
-            } else {
-                System.out.println("[i] Jugadores conectados: " + jugadores.size() + ". Escribe START para empezar.");
+            if (tiempoPrimerJugador > 0 && (System.currentTimeMillis() - tiempoPrimerJugador) >= TIMEOUT_MS) {
+                System.out.println("[i] Timeout de 90s alcanzado con " + n + " jugador(es). Iniciando juego...");
+                break;
             }
+            try { Thread.sleep(500); } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
         }
 
         System.out.println("\n=== EMPIEZA EL QUIZ (SSL) ===\n");
         iniciarJuego();
         pool.shutdown();
-        scanner.close();
     }
 
     private static void iniciarJuego() {
@@ -197,11 +196,11 @@ public class ServidorQuizSSL {
     }
 
     private static List<Pregunta> cargarDesdeFTP() {
-        String ftpHost = "217.154.102.183";
+        String ftpHost = "172.17.0.1";
         String ftpFile = "/blocket.csv";
         System.out.println("[i] Intentando descargar preguntas desde FTP " + ftpHost + "...");
         try {
-            java.net.URL url = new java.net.URL("ftp://anonymous:@" + ftpHost + ftpFile);
+            java.net.URL url = new java.net.URL("ftp://ftpquiz:Quiz2026!@" + ftpHost + ftpFile);
             java.net.URLConnection conexion = url.openConnection();
             conexion.setConnectTimeout(5000);
             conexion.setReadTimeout(5000);
@@ -225,6 +224,10 @@ public class ServidorQuizSSL {
 
     public static void registrarJugador(ManejadorClienteQuiz jugador) {
         jugadores.add(jugador);
+        if (tiempoPrimerJugador == 0) {
+            tiempoPrimerJugador = System.currentTimeMillis();
+            System.out.println("[i] Primer jugador conectado. El juego arrancara en max 90s.");
+        }
         System.out.println("[i] Jugadores conectados: " + jugadores.size());
     }
 

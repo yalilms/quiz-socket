@@ -14,8 +14,8 @@ import java.util.Scanner;
  * Puerto: 8443
  */
 public class ClienteQuizSSL {
-    private static final String HOST = "localhost";
-    private static final int PUERTO = 8443;
+    private static String HOST = "localhost";
+    private static int PUERTO = 8443;
 
     private SSLSocket socket;
     private PrintWriter salida;
@@ -179,6 +179,8 @@ public class ClienteQuizSSL {
     }
 
     public static void main(String[] args) {
+        if (args.length > 0) HOST = args[0];
+        if (args.length > 1) PUERTO = Integer.parseInt(args[1]);
         ClienteQuizSSL cliente = new ClienteQuizSSL();
         cliente.iniciar();
     }
